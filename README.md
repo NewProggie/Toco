@@ -1,5 +1,6 @@
 # Toco
-Toco is a small toy compiler using Flex (Lexer), Bison (Parser) and LLVM for generating the Assembly
+Toco is a small toy compiler using Flex (Lexer), Bison (Parser) and LLVM for 
+generating the Assembly
 
 ## Installation requirements
 In order to build Toco you need Flex, Bison, LLVM and a recent C++ compiler. If

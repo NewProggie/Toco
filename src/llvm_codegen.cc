@@ -21,14 +21,15 @@ llvm::LLVMContext &GetGlobalContext() {
 }
 
 static llvm::Type *typeOf(const Identifier &type) {
-    if (type.name.compare("int") == 0) {
+    if (type.name == "int") {
         return llvm::Type::getInt64Ty(GetGlobalContext());
-    } else if (type.name.compare("double") == 0) {
+    }
+    if (type.name == "double") {
         return llvm::Type::getDoubleTy(GetGlobalContext());
     }
     return llvm::Type::getVoidTy(GetGlobalContext());
 }
-}
+} // namespace internal
 
 LLVMCodeGenContext::LLVMCodeGenContext() {
     module = new llvm::Module("main", internal::GetGlobalContext());
@@ -44,7 +45,7 @@ void LLVMCodeGenContext::generateCode(Block &root) {
     main_function_ = llvm::Function::Create(
         ftype, llvm::GlobalValue::InternalLinkage, "main", module);
     llvm::BasicBlock *bblock = llvm::BasicBlock::Create(
-        internal::GetGlobalContext(), "entry", main_function_, 0);
+        internal::GetGlobalContext(), "entry", main_function_, nullptr);
 
     // Push new block/variable context
     pushBlock(bblock);
@@ -122,7 +123,7 @@ llvm::Value *Assignment::generateCode(LLVMCodeGenContext &context) {
 }
 
 llvm::Value *MethodCall::generateCode(LLVMCodeGenContext &context) {
-    llvm::Function *function = context.module->getFunction(id.name.c_str());
+    llvm::Function *function = context.module->getFunction(id.name);
     if (function == nullptr) {
         std::cerr << "No such function " << id.name << std::endl;
     }
@@ -177,11 +178,10 @@ llvm::Value *FunctionDeclaration::generateCode(LLVMCodeGenContext &context) {
     }
     llvm::FunctionType *ftype = llvm::FunctionType::get(
         internal::typeOf(type), llvm::makeArrayRef(arg_types), false);
-    llvm::Function *function =
-        llvm::Function::Create(ftype, llvm::GlobalValue::InternalLinkage,
-                               id.name.c_str(), context.module);
+    llvm::Function *function = llvm::Function::Create(
+        ftype, llvm::GlobalValue::InternalLinkage, id.name, context.module);
     llvm::BasicBlock *bblock = llvm::BasicBlock::Create(
-        internal::GetGlobalContext(), "entry", function, 0);
+        internal::GetGlobalContext(), "entry", function, nullptr);
     context.pushBlock(bblock);
 
     llvm::Function::arg_iterator args_values = function->arg_begin();
@@ -189,8 +189,8 @@ llvm::Value *FunctionDeclaration::generateCode(LLVMCodeGenContext &context) {
     for (it = arguments.begin(); it != arguments.end(); it++) {
         (**it).generateCode(context);
         argument_value = &*args_values++;
-        argument_value->setName((*it)->id.name.c_str());
-        llvm::StoreInst *inst = new llvm::StoreInst(
+        argument_value->setName((*it)->id.name);
+        auto *inst = new llvm::StoreInst(
             argument_value, context.getLocals()[(*it)->id.name], false, bblock);
     }
 
@@ -206,7 +206,7 @@ llvm::Value *VariableDeclaration::generateCode(LLVMCodeGenContext &context) {
     std::cout << "Creating variable declaration " << type.name << " " << id.name
               << std::endl;
     llvm::AllocaInst *alloc = new llvm::AllocaInst(
-        internal::typeOf(type), id.name.c_str(), context.getCurrentBlock());
+        internal::typeOf(type), id.name, context.getCurrentBlock());
     context.getLocals()[id.name] = alloc;
     if (assignmentExpression != nullptr) {
         Assignment assign(id, *assignmentExpression);
@@ -226,15 +226,15 @@ llvm::Value *Block::generateCode(LLVMCodeGenContext &context) {
     return last;
 }
 
-llvm::Value *Double::generateCode(LLVMCodeGenContext &context) {
+llvm::Value *Double::generateCode(LLVMCodeGenContext & /*context*/) {
     std::cout << "Creating double " << value << std::endl;
     return llvm::ConstantFP::get(
         llvm::Type::getDoubleTy(internal::GetGlobalContext()), value);
 }
 
-llvm::Value *Integer::generateCode(LLVMCodeGenContext &context) {
+llvm::Value *Integer::generateCode(LLVMCodeGenContext & /*context*/) {
     std::cout << "Creating integer " << value << std::endl;
     return llvm::ConstantInt::get(
         llvm::Type::getInt64Ty(internal::GetGlobalContext()), value, true);
 }
-}
+} // namespace toco

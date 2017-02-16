@@ -39,7 +39,7 @@ class LLVMCodeGenContext {
 
   private:
     std::stack<LLVMCodeGenBlock *> blocks_;
-    llvm::Function *main_function_;
+    llvm::Function *main_function_{};
 };
 }
 

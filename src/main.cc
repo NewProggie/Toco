@@ -1,6 +1,6 @@
 #include <iostream>
-#include "nodes.h"
 #include "llvm_codegen.h"
+#include "nodes.h"
 
 extern int yyparse();
 extern toco::Block *program;

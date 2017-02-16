@@ -6,6 +6,8 @@ In order to build Toco you need Flex, Bison, LLVM and a recent C++ compiler. If
 you're on macOS you may use homebrew for installing all the dependencies:
 
     $ brew install flex bison llvm
+    $ export PATH="/usr/local/Cellar/flex/2.6.3/bin:$PATH"
+    $ export PATH="/usr/local/Cellar/bison/3.0.4/bin:$PATH"
 
 ## Basic compiler toolchain
 Following are the different parts of Toco which will parse source code and

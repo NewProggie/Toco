@@ -24,7 +24,7 @@ The lexer (compiler frontend) takes some source code (text) as input and
 generates a sequence of tokens (strings with an assigned and identified
 meaning, for instance identifiers, keywords, numbers, brackets etc.)
 
-The semanting parsing part takes the sequence of tokens and generates an
+The semantic parsing part takes the sequence of tokens and generates an
 abstract syntax tree (AST). We will use Bison for this part.
 
 Finally we traverse our previously generated AST and generate byte code /
